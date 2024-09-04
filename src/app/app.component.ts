@@ -8,9 +8,9 @@ import { Component, OnInit } from '@angular/core';
 })
 export class AppComponent implements OnInit {
   public count: number = 0;
-
+  public title: string = 'websocket_tutorial';
   ngOnInit() {
-  
+    console.log('AppComponent initialized');
   }
 
   increment() {
