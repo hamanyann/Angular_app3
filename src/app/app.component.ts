@@ -1,6 +1,4 @@
 import { Component, OnInit } from '@angular/core';
-import Pusher from 'pusher-js';
-import { environment } from '../environments/environment';
 
 @Component({
   selector: 'app-root',
@@ -12,18 +10,7 @@ export class AppComponent implements OnInit {
   public count: number = 0;
 
   ngOnInit() {
-    // Pusherの設定
-    const pusher = new Pusher(environment.pusherKey, {
-      cluster: environment.pusherCluster,
-    });
-
-    // チャンネルのサブスクライブ
-    const channel = pusher.subscribe('my-channel');
-
-    // イベントのバインド
-    channel.bind('my-event', (data: any) => {
-      this.count = data.count;
-    });
+  
   }
 
   increment() {
