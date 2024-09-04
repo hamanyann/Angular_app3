@@ -1,42 +1,68 @@
-import { Injectable } from "@angular/core";
-import { Observable, Subject } from "rxjs";
+// websocket.service.ts
+import { Injectable, OnDestroy } from '@angular/core';
+import { Subject } from 'rxjs';
 
 @Injectable({
-  providedIn: 'root' 
+  providedIn: 'root',
 })
-export class WebsocketService {
-  private subject: Subject<MessageEvent> | undefined;
+export class WebsocketService implements OnDestroy {
+  private socket: WebSocket | undefined;
+  private countSubject = new Subject<number>();
+  private url = 'ws://localhost:8080'; // WebSocketのURLを定義
 
-  constructor() {}
+  count$ = this.countSubject.asObservable();
 
-  public connect(url: string): Subject<MessageEvent> {
-    if (!this.subject) {
-      this.subject = this.create(url);
-      console.log("Successfully connected: " + url);
-    }
-    return this.subject;
+  private messageSubject = new Subject<MessageEvent>();
+
+  constructor() {
+    this.connect();
   }
 
-  private create(url: string): Subject<MessageEvent> {
-    const ws = new WebSocket(url);
+  private connect() {
+    this.socket = new WebSocket(this.url);
 
-    const observable = new Observable<MessageEvent>((obs) => {
-      ws.onmessage = (event) => obs.next(event);
-      ws.onerror = (event) => obs.error(event);
-      ws.onclose = () => obs.complete();
-      return () => ws.close();
-    });
-
-    const observer = {
-      next: (data: any) => {
-        if (ws.readyState === WebSocket.OPEN) {
-          ws.send(JSON.stringify(data));
+    this.socket.onmessage = (event) => {
+      if (typeof event.data === 'string') {
+        // 文字列データだけ処理する
+        try {
+          const data = JSON.parse(event.data);
+          if (data.count !== undefined) {
+            this.countSubject.next(data.count);
+          }
+        } catch (e) {
+          console.error('Error parsing WebSocket message', e);
         }
       }
     };
 
-      const subject = new Subject<MessageEvent>();
-    observable.subscribe(subject);
-    return subject;
+    this.socket.onerror = (error) => {
+      console.error('WebSocket Error: ', error);
+    };
+
+    this.socket.onclose = () => {
+      console.log('WebSocket connection closed');
+    };
+  }
+
+  increment() {
+    if (this.socket) {
+      if (this.socket.readyState === WebSocket.OPEN) {
+        this.socket.send(JSON.stringify({ type: 'increment' }));
+      } else {
+        console.error(
+          'WebSocket is not open. Ready state: ' + this.socket.readyState
+        );
+      }
+    }
+  }
+
+  ngOnDestroy() {
+    if (this.socket) {
+      this.socket.close();
+    }
+  }
+
+  getMessageSubject() {
+    return this.messageSubject.asObservable(); // メッセージのObservableを公開
   }
 }

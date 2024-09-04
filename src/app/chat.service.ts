@@ -3,8 +3,7 @@ import { Observable, Subject } from "rxjs";
 import { map } from "rxjs/operators";
 import { WebsocketService } from "./websocket.service";
 
-const CHAT_URL = 'wss://your-correct-websocket-server-url.onrender.com/';
-
+const CHAT_URL = "ws://localhost:8080/";
 
 export interface Message {
   author: string;
@@ -19,7 +18,7 @@ export class ChatService {
   private websocketSubject: Subject<MessageEvent>;
 
   constructor(private wsService: WebsocketService) {
-    this.websocketSubject = this.wsService.connect(CHAT_URL);
+    this.websocketSubject = this.wsService.getMessageSubject() as Subject<MessageEvent>;
 
     this.messages = this.websocketSubject.pipe(
       map((response: MessageEvent): Message => {
@@ -33,8 +32,8 @@ export class ChatService {
   }
 
   sendMessage(message: Message) {
-    if (this.websocketSubject) {
-      this.websocketSubject.next({ data: JSON.stringify(message) } as MessageEvent);
+    if (this.wsService) {
+      this.wsService.increment(); // メッセージ送信の代わりに increment メソッドを呼び出す
     }
   }
 }

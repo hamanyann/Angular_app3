@@ -1,29 +1,38 @@
-import { Component } from "@angular/core";
-import { Observable } from "rxjs";
-import { ChatService, Message } from "./chat.service";
-import { WebsocketService } from "./websocket.service";
+import { Component, OnInit } from '@angular/core';
+import Pusher from 'pusher-js';
 
 @Component({
-  selector: "app-root",
-  templateUrl: "./app.component.html",
-  styleUrls: ["./app.component.css"],
+  selector: 'app-root',
+  templateUrl: './app.component.html',
   standalone: true,
-  providers: [WebsocketService]
+  styleUrls: ['./app.component.css']
 })
-export class AppComponent {
- 
+export class AppComponent implements OnInit {
+  public count: number = 0;
 
-  public count = 0;
+  ngOnInit() {
+    // Pusherの設定
+    const pusher = new Pusher('YOUR_APP_KEY', {
+      cluster: 'YOUR_APP_CLUSTER'
+    });
 
-  constructor(private chatService: ChatService) {
-    this.chatService.messages.subscribe(msg => {
-      console.log("Response from websocket: " + msg);
+    // チャンネルのサブスクライブ
+    const channel = pusher.subscribe('my-channel');
+
+    // イベントのバインド
+    channel.bind('my-event', (data: any) => {
+      this.count = data.count;
     });
   }
 
-
-
   increment() {
-    this.count++;
+    fetch('https://angular-app3.vercel.app/increment', {
+      method: 'POST'
+    })
+    .then(response => response.json())
+    .then(data => {
+      console.log('Count incremented:', data.count);
+    })
+    .catch(error => console.error('Error:', error));
   }
 }
