@@ -1,20 +1,19 @@
 import { Component } from "@angular/core";
+import { Observable } from "rxjs";
 import { ChatService, Message } from "./chat.service";
+import { WebsocketService } from "./websocket.service";
 
 @Component({
   selector: "app-root",
   templateUrl: "./app.component.html",
   styleUrls: ["./app.component.css"],
   standalone: true,
-  providers: [ChatService]
+  providers: [WebsocketService]
 })
 export class AppComponent {
-  private message: Message = {
-    author: "tutorialedge",
-    message: "this is a test message"
-  };
+ 
 
-  count = 0;
+  public count = 0;
 
   constructor(private chatService: ChatService) {
     this.chatService.messages.subscribe(msg => {
@@ -23,12 +22,6 @@ export class AppComponent {
   }
 
 
-
-  sendMsg() {
-    console.log("new message from client to websocket: ", this.message);
-    this.chatService.sendMessage(this.message);
-    this.message.message = "";
-  }
 
   increment() {
     this.count++;
