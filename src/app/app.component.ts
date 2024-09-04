@@ -17,7 +17,12 @@ export class AppComponent implements OnInit {
     fetch('https://angular-app3.vercel.app/increment', {
       method: 'POST',
     })
-      .then((response) => response.json())
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return response.json();
+      })
       .then((data) => {
         console.log('Count incremented:', data.count);
       })

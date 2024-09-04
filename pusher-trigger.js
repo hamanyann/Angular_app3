@@ -1,7 +1,8 @@
+require('dotenv').config();
 const express = require("express");
 const Pusher = require("pusher");
 const app = express();
-const port = process.env.PORT || 3000;
+const port = 3000;
 
 // Pusherの設定
 const pusher = new Pusher({
@@ -16,6 +17,7 @@ const pusher = new Pusher({
 let count = 0;
 
 app.use(express.json());
+app.use(cors());
 
 // カウントを増やすエンドポイント
 app.post("/increment", (req, res) => {
@@ -23,6 +25,11 @@ app.post("/increment", (req, res) => {
   pusher.trigger("my-channel", "my-event", { count });
   res.send({ count });
 });
+
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).send('Something broke!');
+  });
 
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
